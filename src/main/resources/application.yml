@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: donation-app
+
+  profiles:
+    active: local
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/donation_db
+    username: postgres
+    password: serenity
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8081
+
+app:
+  i18n:
+    fallback-language: en
+
+  jwt:
+    enabled: true
+    issuer: serenity
+    secret: 1234567890123456789012345678901234567890123456789012345678901234
+    principal-claim: sub
+    roles-claim: roles
+    name-claim: name
+    email-claim: email
+    allowed-clock-skew-seconds: 60
+
+logging:
+  level:
+    root: INFO
+    com.serenity.donations: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE

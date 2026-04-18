@@ -1,0 +1,176 @@
+{
+  "info": {
+    "name": "Donation App API",
+    "_postman_id": "donation-app-collection-001",
+    "description": "Postman collection for Donation App (JWT + i18n + Admin/User flows)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8081" },
+    { "key": "adminToken", "value": "" },
+    { "key": "userToken", "value": "" },
+    { "key": "causeId", "value": "" },
+    { "key": "transactionRef", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Generate Admin Token",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"admin1\",\n  \"name\": \"Admin User\",\n  \"email\": \"admin@example.com\",\n  \"roles\": [\"ROLE_ADMIN\"]\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/dev/token"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.environment.set(\"adminToken\", pm.response.json().token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Create Cause",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"EDUCATION_SUPPORT\",\n  \"displayOrder\": 1,\n  \"allowCustomAmount\": true,\n  \"minAmount\": 10,\n  \"maxAmount\": 10000,\n  \"currencyCode\": \"USD\",\n  \"imageUrl\": \"https://example.com/education.jpg\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/admin/causes"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.environment.set(\"causeId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Add i18n EN",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"languageCode\": \"en\",\n  \"title\": \"Education Support\",\n  \"shortDescription\": \"Help support education initiatives\",\n  \"fullDescription\": \"Your contribution supports education.\",\n  \"ctaLabel\": \"Donate\",\n  \"thankYouMessage\": \"Thank you!\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/admin/causes/{{causeId}}/i18n"
+      }
+    },
+    {
+      "name": "4. Activate Cause",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/admin/causes/{{causeId}}/status?status=ACTIVE"
+      }
+    },
+    {
+      "name": "5. Public Get Causes",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept-Language", "value": "en" }
+        ],
+        "url": "{{baseUrl}}/api/v1/public/causes"
+      }
+    },
+    {
+      "name": "6. Public Get Cause by Code",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept-Language", "value": "en" }
+        ],
+        "url": "{{baseUrl}}/api/v1/public/causes/EDUCATION_SUPPORT"
+      }
+    },
+    {
+      "name": "7. Generate User Token",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"user1\",\n  \"name\": \"Normal User\",\n  \"email\": \"user@example.com\",\n  \"roles\": [\"ROLE_USER\"]\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/dev/token"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.environment.set(\"userToken\", pm.response.json().token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Create Donation",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{userToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"causeCode\": \"EDUCATION_SUPPORT\",\n  \"amount\": 50,\n  \"currencyCode\": \"USD\",\n  \"messageToOrganization\": \"Wishing you success.\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/donations"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.environment.set(\"transactionRef\", pm.response.json().transactionRef);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Get My Donations",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{userToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/donations/me"
+      }
+    },
+    {
+      "name": "10. Get My Donation by Ref",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{userToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/donations/me/{{transactionRef}}"
+      }
+    }
+  ]
+}
